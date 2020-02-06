@@ -3,7 +3,10 @@ package ru.ggershevich;
 
 // 100000089000009002000000450007600000030040000900002005004070000500008010060300000
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
 
 public class SudokuSolver {
 
@@ -16,48 +19,8 @@ public class SudokuSolver {
     private static final int BOXES_IN_ROW = 3;
     private static final int BOXES_IN_COLUMN = 3;
 
-    private final String example;
-
-    private static class Node {
-        private final int id;  // 0-80
-        private final int row;
-        private final int column;
-        private int color = 0; // 0 means not colored yet
-
-        public Node(int id, int color) {
-            this.id = id;
-            this.color = color;
-            this.row = id / NODES_IN_ROW;
-            this.column = id - row * NODES_IN_ROW;
-        }
-
-        public int getColor() {
-            return color;
-        }
-
-        public void setColor(int color) {
-            this.color = color;
-        }
-
-        public int getRow() {
-            return row;
-        }
-
-        public int getColumn() {
-            return column;
-        }
-
-        public boolean isColored() {
-            return color > 0;
-        }
-
-        public int getId() {
-            return id;
-        }
-    }
-
-    private final Node[] nodes = new Node[NUM_OF_NODES];
-    private final Node[][] adjacency = new Node[NUM_OF_NODES][DEGREE_OF_NODE];
+    private final int[] example;
+    private final int[][] adjacency = new int[NUM_OF_NODES][DEGREE_OF_NODE];
 
     /**
      * @param example стока из 81 символа 0-9. 0 означает что соответствующая ячейка не окрашена
@@ -66,42 +29,44 @@ public class SudokuSolver {
         if (!checkExample(example)) {
             throw new IllegalArgumentException("Example must be string of " + NUM_OF_NODES + " digits");
         }
-        this.example = example;
+        this.example = prepare(example);
+
+        // Подготовка списков смежности. Списки смежности записанная в индексах, может быть подготовлена заранее и захардкожена.
+        // Однако в этой версии этого решено не делать для экономии времени на разработку
+        for (int nodeIndex = 0; nodeIndex < NUM_OF_NODES; nodeIndex++) {
+            int adjacent = 0;
+            for (int rowIndex = 0; rowIndex < NODES_IN_ROW; rowIndex++) {
+                for (int colIndex = 0; colIndex < NODES_IN_COLUMN; colIndex++) {
+                    final int nodeRow = nodeIndex / NODES_IN_ROW;
+                    final int nodeColumn = nodeIndex - nodeRow * NODES_IN_ROW;
+                    if (nodeRow == rowIndex
+                            && nodeColumn == colIndex
+                    ) {
+                        continue;
+                    }
+                    if (nodeRow == rowIndex
+                            || nodeColumn == colIndex
+                            || boxIndex(nodeRow, nodeColumn) == boxIndex(rowIndex, colIndex)
+                    ) {
+                        adjacency[nodeIndex][adjacent++] = NODES_IN_ROW * rowIndex + colIndex;
+                    }
+                }
+            }
+        }
     }
 
     private static int boxIndex(int row, int column) {
         return BOXES_IN_ROW * (row / BOXES_IN_ROW) + (column / BOXES_IN_COLUMN);
     }
 
-    private void prepare() {
+    private int[] prepare(String exampleStr) {
+        int [] exampleNodes = new int[NUM_OF_NODES];
         for (int i = 0; i < NUM_OF_NODES; i++) {
-            final int color = Character.getNumericValue(example.charAt(i));
-            nodes[i] = new Node(i, color);
+            final int color = Character.getNumericValue(exampleStr.charAt(i));
+            exampleNodes[i] = color;
         }
 
-        // Подготовка списков смежности. Таблица смежности записанная в индексах, может быть подготовлена заранее и захардкожена.
-        // Однако в этой версии этого решено не делать для экономии времени на разработку
-        for (int nodeIndex = 0; nodeIndex < NUM_OF_NODES; nodeIndex++) {
-            int adjacent = 0;
-            final Node node = nodes[nodeIndex];
-            final int boxIndexOfNode = boxIndex(node.getRow(), node.getColumn());
-            for (int rowIndex = 0; rowIndex < NODES_IN_ROW; rowIndex++) {
-                for (int colIndex = 0; colIndex < NODES_IN_COLUMN; colIndex++) {
-                    if (node.getRow() == rowIndex
-                            && node.getColumn() == colIndex
-                    ) {
-                        continue;
-                    }
-                    if (node.getRow() == rowIndex
-                            || node.getColumn() == colIndex
-                            || boxIndexOfNode == boxIndex(rowIndex, colIndex)
-                    ) {
-                        adjacency[nodeIndex][adjacent++] = nodes[NODES_IN_ROW * rowIndex + colIndex];
-                    }
-                }
-            }
-        }
-        //System.out.println(Arrays.toString(Arrays.stream(adjacency[16]).mapToInt(Node::getId).toArray()));
+        return exampleNodes;
     }
 
     private boolean checkExample(String example) {
@@ -114,16 +79,20 @@ public class SudokuSolver {
     }
 
     public int[] solve() {
-        prepare();
+        int[] nodes = Arrays.copyOf(example, example.length);
+        List<Integer> bruteForceIdexes = new ArrayList();
+        long bruteForcedValue = 0;
 
-        long countOfColoredNodes = Arrays.stream(nodes).filter(Node::isColored).count();
-        System.out.println("Started with countOfColoredNodes = " + countOfColoredNodes);
+        final long countOfColoredNodesForExample = Arrays.stream(nodes).filter(c -> c != 0).count();
+        long countOfColoredNodes = countOfColoredNodesForExample;
+//        System.out.println("Started with countOfColoredNodes = " + countOfColoredNodes);
         while (countOfColoredNodes < NUM_OF_NODES) {
             int max = -1;
             int index = -1;
             for  (int i = 0; i < NUM_OF_NODES; i++) {
-                if (!nodes[i].isColored()) {
-                    int d = saturatedDegreeFor(i);
+                // nodes[i] == 0 - Вершина еще не окрашена
+                if (nodes[i] == 0) {
+                    int d = saturatedDegreeFor(i, nodes);
 
                     if(d > max) {
                         max = d;
@@ -137,21 +106,21 @@ public class SudokuSolver {
 //                    }
                 }
             }
-            pickColorFor(index);
+            pickColorFor(index, nodes);
             countOfColoredNodes++;
-
+            
             //System.out.println("Now countOfColoredNodes = " + countOfColoredNodes + " and index = " + index);
         }
 
-        return Arrays.stream(nodes).mapToInt(Node::getColor).toArray();
+        return nodes;
     }
 
     /**
      * Подбирает для вершины наименьший возможный цвет (цвет еще не использованный соседями).
      * @param nodeIndex индекс вершины
      */
-    private void pickColorFor(int nodeIndex) {
-        final int[] usedColors = adjacentColorsFor(nodeIndex);
+    private void pickColorFor(int nodeIndex, int[] nodes) {
+        final int[] usedColors = adjacentColorsFor(nodeIndex, nodes);
         Arrays.sort(usedColors);
 
         int pickedColor = 1;
@@ -162,7 +131,7 @@ public class SudokuSolver {
             pickedColor++;
         }
 
-        nodes[nodeIndex].setColor(pickedColor);
+        nodes[nodeIndex] = pickedColor;
     }
 
     /**
@@ -170,8 +139,8 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      * @return число окрашенных соседей
      */
-    private int saturatedDegreeFor(int nodeIndex) {
-        return adjacentColorsFor(nodeIndex).length;
+    private int saturatedDegreeFor(int nodeIndex, int[] nodes) {
+        return adjacentColorsFor(nodeIndex, nodes).length;
     }
 
     /**
@@ -179,12 +148,13 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      * @return массив использованных цветов
      */
-    private int[] adjacentColorsFor(int nodeIndex) {
+    private int[] adjacentColorsFor(int nodeIndex, int[] nodes) {
         final int[] adjacentColors = new int[DEGREE_OF_NODE];
         int count = 0;
-        for (Node node : adjacency[nodeIndex]) {
-            if (node.isColored() && !contains(adjacentColors, node.getColor())) {
-                adjacentColors[count] = node.getColor();
+        for (int adjacentIndex : adjacency[nodeIndex]) {
+            final int adjacentColor = nodes[adjacentIndex];
+            if (adjacentColor != 0 && !contains(adjacentColors, adjacentColor)) {
+                adjacentColors[count] = adjacentColor;
                 count++;
             }
         }
