@@ -108,7 +108,33 @@ public class SudokuSolver {
             }
             pickColorFor(index, nodes);
             countOfColoredNodes++;
-            
+
+            if (nodes[index] > 9) {
+                // Этот брютфорс не работает, так как не учитывает цвета соседей у изменяемых нод
+                bruteForcedValue++;
+                String bruteForcedValueStr = String.valueOf(bruteForcedValue);
+                bruteForcedValueStr = bruteForcedValueStr.replace('0', '1');
+                bruteForcedValue = Long.parseLong(bruteForcedValueStr);
+
+                if (bruteForcedValueStr.length() > bruteForceIdexes.size()) {
+                    bruteForceIdexes.add(index);
+                }
+
+                nodes = Arrays.copyOf(example, example.length);
+
+                System.out.println("BruteForcedIndexes = " + bruteForceIdexes);
+                System.out.println("bruteForcedValue = " + bruteForcedValue);
+
+                long bruteForcedValueTemp = bruteForcedValue;
+                for (int i = bruteForceIdexes.size() - 1; i >= 0; i--) {
+                    nodes[bruteForceIdexes.get(i)] = (int) (bruteForcedValueTemp % 10);
+                    bruteForcedValueTemp = bruteForcedValueTemp / 10;
+                    System.out.println("Node X = " + nodes[bruteForceIdexes.get(i)]);
+                }
+
+                countOfColoredNodes = countOfColoredNodesForExample + bruteForceIdexes.size();
+            }
+
             //System.out.println("Now countOfColoredNodes = " + countOfColoredNodes + " and index = " + index);
         }
 
