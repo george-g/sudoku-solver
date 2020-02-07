@@ -27,7 +27,7 @@ public class SudokuSolver {
     private final int[][] adjacencyCol = new int[NUM_OF_NODES][DEGREE_OF_COL];
     private final int[][] adjacencyBox = new int[NUM_OF_NODES][DEGREE_OF_BOX];
 
-    private final int[] colorBitMap = {
+    private static final int[] colorBitMap = {
             0b000000000,
             0b000000001,
             0b000000010,
@@ -107,6 +107,8 @@ public class SudokuSolver {
         long countOfColoredNodes = countOfColoredNodesForExample;
 //        System.out.println("Started with countOfColoredNodes = " + countOfColoredNodes);
         while (countOfColoredNodes < NUM_OF_NODES) {
+            int[] possibleColors = new int[NUM_OF_NODES];
+
             int max = -1;
             int index = -1;
             for  (int i = 0; i < NUM_OF_NODES; i++) {
@@ -119,11 +121,11 @@ public class SudokuSolver {
                         index = i;
                     }
 //                  Эта часть алгоритма опущена, так как для регуляного графа степень вершины всегда одна
-//                    if (d == max) {
-//                        if (Degree(n[i]) > Degree(n[index])) {
-//                            index = i
-//                        }
-//                    }
+                    if (d == max) {
+                        if (Integer.bitCount(possibleColors[i]) < Integer.bitCount(possibleColors[index])) {
+                            index = i;
+                        }
+                    }
                 }
             }
             pickColorFor(index, nodes);
@@ -166,7 +168,12 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      */
     private void pickColorFor(int nodeIndex, int[] nodes) {
-        int usedColors = adjacentColorsBitsFor(nodeIndex, nodes);
+        int[] usedColorsByType = adjacentColorsBitsFor(nodeIndex, nodes);
+
+        int usedColors = usedColorsByType[0] | usedColorsByType[1] | usedColorsByType[2];
+//        for  (int adjacentByRowIndex : adjacencyRow[nodeIndex]) {
+//            adjacentColorsBitsFor(i, nodes) ^ 0b0111111111;
+//        }
 
         // должно быть максимум 9. Но выбранный алгоритм бывает заходит в тупик. 10 нужно чтоб распознать это
         for (int i = 1; i < 10; i++) {
@@ -184,7 +191,9 @@ public class SudokuSolver {
      * @return число окрашенных соседей
      */
     private int saturatedDegreeFor(int nodeIndex, int[] nodes) {
-        return Integer.bitCount(adjacentColorsBitsFor(nodeIndex, nodes));
+        final int[] colorsBits = adjacentColorsBitsFor(nodeIndex, nodes);
+
+        return Integer.bitCount(colorsBits[0] | colorsBits[1] | colorsBits[2]);
     }
 
     /**
@@ -192,20 +201,22 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      * @return массив использованных цветов
      */
-    private int adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
-        int adjacentColors = 0;
+    private int[] adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
+        int adjacentByRowColors = 0;
+        int adjacentByColColors = 0;
+        int adjacentByBoxColors = 0;
         int count = 0;
         for (int adjacentIndex : adjacencyRow[nodeIndex]) {
-            adjacentColors |= colorBitMap[nodes[adjacentIndex]];
+            adjacentByRowColors |= colorBitMap[nodes[adjacentIndex]];
         }
         for (int adjacentIndex : adjacencyCol[nodeIndex]) {
-            adjacentColors |= colorBitMap[nodes[adjacentIndex]];
+            adjacentByColColors |= colorBitMap[nodes[adjacentIndex]];
         }
         for (int adjacentIndex : adjacencyBox[nodeIndex]) {
-            adjacentColors |= colorBitMap[nodes[adjacentIndex]];
+            adjacentByBoxColors |= colorBitMap[nodes[adjacentIndex]];
         }
 
-        return adjacentColors;
+        return new int[] {adjacentByBoxColors, adjacentByColColors, adjacentByRowColors};
     }
 
 }
