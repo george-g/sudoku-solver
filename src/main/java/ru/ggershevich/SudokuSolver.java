@@ -27,6 +27,18 @@ public class SudokuSolver {
     private final int[][] adjacencyCol = new int[NUM_OF_NODES][DEGREE_OF_COL];
     private final int[][] adjacencyBox = new int[NUM_OF_NODES][DEGREE_OF_BOX];
 
+    private final int[] colorBitMap = {
+            0b000000000,
+            0b000000001,
+            0b000000010,
+            0b000000100,
+            0b000001000,
+            0b000010000,
+            0b000100000,
+            0b001000000,
+            0b010000000,
+            0b100000000,
+    };
     /**
      * @param example стока из 81 символа 0-9. 0 означает что соответствующая ячейка не окрашена
      */
@@ -154,18 +166,16 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      */
     private void pickColorFor(int nodeIndex, int[] nodes) {
-        final int[] usedColors = adjacentColorsFor(nodeIndex, nodes);
-        Arrays.sort(usedColors);
+        int usedColors = adjacentColorsBitsFor(nodeIndex, nodes);
 
-        int pickedColor = 1;
-        for (int i = 0; i < usedColors.length; i++) {
-            if (pickedColor < usedColors[i]) {
-                break;
+        // должно быть максимум 9. Но выбранный алгоритм бывает заходит в тупик. 10 нужно чтоб распознать это
+        for (int i = 1; i < 10; i++) {
+            if ((usedColors & 0x000000001) == 0) {
+                nodes[nodeIndex] = i;
+                return;
             }
-            pickedColor++;
+            usedColors >>>= 1;
         }
-
-        nodes[nodeIndex] = pickedColor;
     }
 
     /**
@@ -174,7 +184,7 @@ public class SudokuSolver {
      * @return число окрашенных соседей
      */
     private int saturatedDegreeFor(int nodeIndex, int[] nodes) {
-        return adjacentColorsFor(nodeIndex, nodes).length;
+        return Integer.bitCount(adjacentColorsBitsFor(nodeIndex, nodes));
     }
 
     /**
@@ -182,38 +192,20 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      * @return массив использованных цветов
      */
-    private int[] adjacentColorsFor(int nodeIndex, int[] nodes) {
-        final int[] adjacentColors = new int[8];
+    private int adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
+        int adjacentColors = 0;
         int count = 0;
         for (int adjacentIndex : adjacencyRow[nodeIndex]) {
-            final int adjacentColor = nodes[adjacentIndex];
-            if (adjacentColor != 0 && !contains(adjacentColors, adjacentColor)) {
-                adjacentColors[count++] = adjacentColor;
-            }
+            adjacentColors |= colorBitMap[nodes[adjacentIndex]];
         }
         for (int adjacentIndex : adjacencyCol[nodeIndex]) {
-            final int adjacentColor = nodes[adjacentIndex];
-            if (adjacentColor != 0 && !contains(adjacentColors, adjacentColor)) {
-                adjacentColors[count++] = adjacentColor;
-            }
+            adjacentColors |= colorBitMap[nodes[adjacentIndex]];
         }
         for (int adjacentIndex : adjacencyBox[nodeIndex]) {
-            final int adjacentColor = nodes[adjacentIndex];
-            if (adjacentColor != 0 && !contains(adjacentColors, adjacentColor)) {
-                adjacentColors[count++] = adjacentColor;
-            }
+            adjacentColors |= colorBitMap[nodes[adjacentIndex]];
         }
 
-        return Arrays.copyOf(adjacentColors, count);
+        return adjacentColors;
     }
 
-    private boolean contains(final int[] array, final int v) {
-        for(int i : array){
-            if(i == v){
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
