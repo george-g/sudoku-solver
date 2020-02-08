@@ -160,4 +160,26 @@ public class UtilitesTest {
         assertNull(combination);
     }
 
+    @Test
+    public void nextCombinationPower1() {
+        BitSet[] independentNodes = Utilites.getIndependentNodes(nodes, adjacency);
+        int[] combination;
+        combination = Utilites.nextCombination(null, independentNodes, 1);
+        assertEquals(combination, new int[]{0});
+        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        assertEquals(combination, new int[]{1});
+        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        assertEquals(combination, new int[]{2});
+        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        assertEquals(combination, new int[]{3});
+        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        assertEquals(combination, new int[]{4});
+        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        assertEquals(combination, new int[]{5});
+        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        assertEquals(combination, new int[]{6});
+        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        assertNull(combination);
+    }
+
 }

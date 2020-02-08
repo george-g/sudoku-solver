@@ -65,6 +65,9 @@ class Utilites {
                     if (independentNodes[i] != null) {
                         result[0] = i;
                         placeForChange++;
+                        if (placeForChange == result.length) {
+                            return result;
+                        }
                         break;
                     }
                 }
