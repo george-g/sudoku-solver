@@ -43,11 +43,19 @@ class Utilites {
         int[] result;
         if (previousCombination == null) {
             result = new int[power];
+            result[0] = -1;
             placeForChange = 0;
         } else {
             result = Arrays.copyOf(previousCombination, previousCombination.length);
             placeForChange = result.length - 1;
         }
+
+//        if (result.length == 1) {
+//            int i;
+//            for (i = result[0]; i < independentNodes.length; i++) {
+//
+//            }
+//        }
 
         // улучшить это место
         while (true) {
