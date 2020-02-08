@@ -17,7 +17,7 @@ public class SudokuSolverTest {
     @Test
     public void testSolve() {
         final SudokuSolver sudoku = new SudokuSolver("081790304000040016006103050000008640008904100049200000090605200870020000205017490");
-
+        // 581796324937542816426183957712358649658974132349261785194635278873429561265817493
         checkAnswer(sudoku.solve());
     }
 
