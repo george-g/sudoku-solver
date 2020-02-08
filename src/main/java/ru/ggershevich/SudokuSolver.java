@@ -3,10 +3,7 @@ package ru.ggershevich;
 
 // 100000089000009002000000450007600000030040000900002005004070000500008010060300000
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
 
 
 public class SudokuSolver {
@@ -28,6 +25,8 @@ public class SudokuSolver {
     private final BitSet[] adjacencyRow = new BitSet[NUM_OF_NODES];
     private final BitSet[] adjacencyCol = new BitSet[NUM_OF_NODES];
     private final BitSet[] adjacencyBox = new BitSet[NUM_OF_NODES];
+
+    private final Set<int[]> usedCombination = new HashSet<>();
 
     private static final int[] colorBitMap = {
             0b000000000,
@@ -107,21 +106,42 @@ public class SudokuSolver {
 
     private int[] solve(int[] nodes) {
         int[] possibleColors = new int[NUM_OF_NODES];
-        int[] colorFrequencies = new int[colorBitMap.length];
-        boolean allColored = true;
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i] == 0) {
-                possibleColors[i] = adjacentColorsBitsFor(i, nodes) ^ 0b111111111;
-                // Сразу подкоректируем частоту с которой данный цвет встречается
-                for (int color = 0; color < colorBitMap.length; color++) {
-                    if ((possibleColors[i] & colorBitMap[color]) > 0) {
-                        colorFrequencies[color]++;
+
+        int[] colorFrequencies;
+        boolean cellWithOneColorExists;
+        do {
+            cellWithOneColorExists = false;
+            colorFrequencies = new int[colorBitMap.length];
+            for (int i = 0; i < nodes.length; i++) {
+                if (nodes[i] == 0) {
+                    possibleColors[i] = adjacentColorsBitsFor(i, nodes) ^ 0b111111111;
+                    if (possibleColors[i] > 0 && Integer.bitCount(possibleColors[i]) == 1) {
+                        cellWithOneColorExists = true;
+                        for (int color = 0; color < colorBitMap.length; color++) {
+                            if ((possibleColors[i] & colorBitMap[color]) > 0) {
+                                nodes[i] = color;
+                            }
+                        }
+                        break;
+                    }
+
+                    // Сразу подкоректируем частоту с которой данный цвет встречается
+                    for (int color = 0; color < colorBitMap.length; color++) {
+                        if ((possibleColors[i] & colorBitMap[color]) > 0) {
+                            colorFrequencies[color]++;
+                        }
                     }
                 }
+            }
+
+        } while (cellWithOneColorExists);
+
+        boolean allColored = true;
+        for (int node : nodes) {
+            if (node == 0) {
                 allColored = false;
             }
         }
-
         if (allColored) {
             if (checkNodes(nodes)) {
                 return nodes;
@@ -141,6 +161,7 @@ public class SudokuSolver {
             }
         }
 
+
         // Найдем все вершины где этот цвет допустим
         int selectedColorBit = colorBitMap[selectedColor];
         BitSet nodesWhereSelectedColorPossible = new BitSet(NUM_OF_NODES);
@@ -149,6 +170,7 @@ public class SudokuSolver {
                 nodesWhereSelectedColorPossible.set(i);
             }
         }
+
 
         // Найдем все вершины где этот цвет предустановлен
         int powerOfCombination = 9;
@@ -167,6 +189,11 @@ public class SudokuSolver {
                 for (int index : combination) {
                     vodes[index] = selectedColor;
                 }
+
+                if (usedCombination.contains(vodes)) {
+                    System.out.println("combination recheck " + Arrays.toString(vodes));
+                }
+
                 int[] solution = solve(vodes);
                 if (solution != null) {
                     return solution;

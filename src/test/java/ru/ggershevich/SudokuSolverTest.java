@@ -29,7 +29,7 @@ public class SudokuSolverTest {
     }
 
 
-    @Test
+    @Test(description = "Очень сложный пример")
     public void testSolve3() {
         final SudokuSolver sudoku = new SudokuSolver("100000089000009002000000450007600000030040000900002005004070000500008010060300000");
 
@@ -37,9 +37,16 @@ public class SudokuSolverTest {
     }
 
 
-    @Test
+    @Test(description = "Простой пример из задания")
     public void testSolve4() {
-        final SudokuSolver sudoku = new SudokuSolver("013800405024605000087000930490306000001000500000701093063000740000207680102008350");
+        final SudokuSolver sudoku = new SudokuSolver("013800405024605000087000930490306000001000500000701093069000740000207680102008350");
+
+        checkAnswer(sudoku.solve());
+    }
+
+    @Test(description = "Сложный пример из задания")
+    public void testSolve5() {
+        final SudokuSolver sudoku = new SudokuSolver("002000041000082070000040009200079300010000080006810004100090000060430000850000400");
 
         checkAnswer(sudoku.solve());
     }
