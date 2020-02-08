@@ -5,6 +5,7 @@ package ru.ggershevich;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 
@@ -23,7 +24,7 @@ public class SudokuSolver {
     private static final int BOXES_IN_COLUMN = 3;
 
     private final int[] example;
-    private final int[][] adjacency = new int[NUM_OF_NODES][DEGREE_OF_NODE];
+    private final BitSet[] adjacency = new BitSet[NUM_OF_NODES];
 
     private static final int[] colorBitMap = {
             0b000000000,
@@ -50,6 +51,7 @@ public class SudokuSolver {
         // Однако в этой версии этого решено не делать для экономии времени на разработку
         for (int nodeIndex = 0; nodeIndex < NUM_OF_NODES; nodeIndex++) {
             int adjacent = 0;
+            adjacency[nodeIndex] = new BitSet(DEGREE_OF_NODE);
             for (int rowIndex = 0; rowIndex < NODES_IN_ROW; rowIndex++) {
                 for (int colIndex = 0; colIndex < NODES_IN_COLUMN; colIndex++) {
                     final int nodeRow = nodeIndex / NODES_IN_ROW;
@@ -61,7 +63,7 @@ public class SudokuSolver {
                         || nodeColumn == colIndex
                         || boxIndex(nodeRow, nodeColumn) == boxIndex(rowIndex, colIndex)
                     ){
-                        adjacency[nodeIndex][adjacent++] = NODES_IN_ROW * rowIndex + colIndex;
+                        adjacency[nodeIndex].set(NODES_IN_ROW * rowIndex + colIndex);
                     }
                 }
             }
@@ -134,35 +136,6 @@ public class SudokuSolver {
      */
     private void pickColorFor(int nodeIndex, int[] nodes) {
         int unusedColors = adjacentColorsBitsFor(nodeIndex, nodes) ^ 0b111111111;
-//
-//        if (Integer.bitCount(unusedColors) > 1) {
-//            int[] acceptableColorsByType = new int[3];
-//
-//            acceptableColorsByType[0] = 0;
-//            for (int adjacentIndex : adjacency[nodeIndex]) {
-//                if (nodes[adjacentIndex] == 0) {
-//                    acceptableColorsByType[0] |= adjacentColorsBitsUnitedFor(adjacentIndex, nodes) ^ 0b111111111;
-//                }
-//            }
-//            acceptableColorsByType[1] = 0;
-//            for (int adjacentIndex : adjacencyCol[nodeIndex]) {
-//                if (nodes[adjacentIndex] == 0) {
-//                    acceptableColorsByType[1] |= adjacentColorsBitsUnitedFor(adjacentIndex, nodes) ^ 0b111111111;
-//                }
-//            }
-//            acceptableColorsByType[2] = 0;
-//            for (int adjacentIndex : adjacencyBox[nodeIndex]) {
-//                if (nodes[adjacentIndex] == 0) {
-//                    acceptableColorsByType[2] |= adjacentColorsBitsUnitedFor(adjacentIndex, nodes) ^ 0b111111111;
-//                }
-//            }
-//            acceptableColorsByType[0] = unusedColors & ~acceptableColorsByType[0];
-//            acceptableColorsByType[1] = unusedColors & ~acceptableColorsByType[1];
-//            acceptableColorsByType[2] = unusedColors & ~acceptableColorsByType[2];
-//        }
-//        for  (int adjacentByRowIndex : adjacency[nodeIndex]) {
-//            adjacentColorsBitsFor(i, nodes) ^ 0b0111111111;
-//        }
 
         // должно быть максимум 9. Но выбранный алгоритм бывает заходит в тупик. 10 нужно чтоб распознать это
         for (int i = 1; i < 10; i++) {
@@ -192,9 +165,10 @@ public class SudokuSolver {
      */
     private int adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
         int adjacentColors = 0;
-        int count = 0;
-        for (int adjacentIndex : adjacency[nodeIndex]) {
+        int adjacentIndex = adjacency[nodeIndex].nextSetBit(0);
+        while (adjacentIndex >= 0) {
             adjacentColors |= colorBitMap[nodes[adjacentIndex]];
+            adjacentIndex = adjacency[nodeIndex].nextSetBit(++adjacentIndex);
         }
 
         return  adjacentColors;
