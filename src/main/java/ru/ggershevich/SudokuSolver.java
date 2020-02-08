@@ -131,6 +131,9 @@ public class SudokuSolver {
             pickColorFor(index, nodes);
             countOfColoredNodes++;
 
+            if (nodes[index] > 9) {
+
+            }
 //            if (nodes[index] > 9) {
 //                // Этот брютфорс не работает, так как не учитывает цвета соседей у изменяемых нод
 //                bruteForcedValue++;
@@ -168,20 +171,44 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      */
     private void pickColorFor(int nodeIndex, int[] nodes) {
-        int[] usedColorsByType = adjacentColorsBitsFor(nodeIndex, nodes);
-
-        int usedColors = usedColorsByType[0] | usedColorsByType[1] | usedColorsByType[2];
+        int unusedColors = adjacentColorsBitsUnitedFor(nodeIndex, nodes) ^ 0b111111111;
+//
+//        if (Integer.bitCount(unusedColors) > 1) {
+//            int[] acceptableColorsByType = new int[3];
+//
+//            acceptableColorsByType[0] = 0;
+//            for (int adjacentIndex : adjacencyRow[nodeIndex]) {
+//                if (nodes[adjacentIndex] == 0) {
+//                    acceptableColorsByType[0] |= adjacentColorsBitsUnitedFor(adjacentIndex, nodes) ^ 0b111111111;
+//                }
+//            }
+//            acceptableColorsByType[1] = 0;
+//            for (int adjacentIndex : adjacencyCol[nodeIndex]) {
+//                if (nodes[adjacentIndex] == 0) {
+//                    acceptableColorsByType[1] |= adjacentColorsBitsUnitedFor(adjacentIndex, nodes) ^ 0b111111111;
+//                }
+//            }
+//            acceptableColorsByType[2] = 0;
+//            for (int adjacentIndex : adjacencyBox[nodeIndex]) {
+//                if (nodes[adjacentIndex] == 0) {
+//                    acceptableColorsByType[2] |= adjacentColorsBitsUnitedFor(adjacentIndex, nodes) ^ 0b111111111;
+//                }
+//            }
+//            acceptableColorsByType[0] = unusedColors & ~acceptableColorsByType[0];
+//            acceptableColorsByType[1] = unusedColors & ~acceptableColorsByType[1];
+//            acceptableColorsByType[2] = unusedColors & ~acceptableColorsByType[2];
+//        }
 //        for  (int adjacentByRowIndex : adjacencyRow[nodeIndex]) {
 //            adjacentColorsBitsFor(i, nodes) ^ 0b0111111111;
 //        }
 
         // должно быть максимум 9. Но выбранный алгоритм бывает заходит в тупик. 10 нужно чтоб распознать это
         for (int i = 1; i < 10; i++) {
-            if ((usedColors & 0x000000001) == 0) {
+            if ((unusedColors & 0x000000001) == 1) {
                 nodes[nodeIndex] = i;
                 return;
             }
-            usedColors >>>= 1;
+            unusedColors >>>= 1;
         }
     }
 
@@ -217,6 +244,16 @@ public class SudokuSolver {
         }
 
         return new int[] {adjacentByBoxColors, adjacentByColColors, adjacentByRowColors};
+    }
+
+    /**
+     * Определяет массив цветов использованных соседями для выбранной вершины
+     * @param nodeIndex индекс вершины
+     * @return массив использованных цветов
+     */
+    private int adjacentColorsBitsUnitedFor(int nodeIndex, int[] nodes) {
+        final int[] colorsBitsFor = adjacentColorsBitsFor(nodeIndex, nodes);
+        return colorsBitsFor[0] | colorsBitsFor[1] | colorsBitsFor[2];
     }
 
 }
