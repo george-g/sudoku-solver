@@ -23,9 +23,7 @@ public class SudokuSolver {
     private static final int BOXES_IN_COLUMN = 3;
 
     private final int[] example;
-    private final int[][] adjacencyRow = new int[NUM_OF_NODES][DEGREE_OF_ROW];
-    private final int[][] adjacencyCol = new int[NUM_OF_NODES][DEGREE_OF_COL];
-    private final int[][] adjacencyBox = new int[NUM_OF_NODES][DEGREE_OF_BOX];
+    private final int[][] adjacency = new int[NUM_OF_NODES][DEGREE_OF_NODE];
 
     private static final int[] colorBitMap = {
             0b000000000,
@@ -51,9 +49,7 @@ public class SudokuSolver {
         // Подготовка списков смежности. Списки смежности записанные в индексах, могут быть подготовлены заранее и захардкожены.
         // Однако в этой версии этого решено не делать для экономии времени на разработку
         for (int nodeIndex = 0; nodeIndex < NUM_OF_NODES; nodeIndex++) {
-            int adjacentRow = 0;
-            int adjacentCol = 0;
-            int adjacentBox = 0;
+            int adjacent = 0;
             for (int rowIndex = 0; rowIndex < NODES_IN_ROW; rowIndex++) {
                 for (int colIndex = 0; colIndex < NODES_IN_COLUMN; colIndex++) {
                     final int nodeRow = nodeIndex / NODES_IN_ROW;
@@ -61,14 +57,11 @@ public class SudokuSolver {
                     if (nodeRow == rowIndex && nodeColumn == colIndex) {
                         continue;
                     }
-                    if (nodeRow == rowIndex) {
-                        adjacencyRow[nodeIndex][adjacentRow++] = NODES_IN_ROW * rowIndex + colIndex;
-                    }
-                    if (nodeColumn == colIndex) {
-                        adjacencyCol[nodeIndex][adjacentCol++] = NODES_IN_ROW * rowIndex + colIndex;
-                    }
-                    if (boxIndex(nodeRow, nodeColumn) == boxIndex(rowIndex, colIndex)) {
-                        adjacencyBox[nodeIndex][adjacentBox++] = NODES_IN_ROW * rowIndex + colIndex;
+                    if (nodeRow == rowIndex
+                        || nodeColumn == colIndex
+                        || boxIndex(nodeRow, nodeColumn) == boxIndex(rowIndex, colIndex)
+                    ){
+                        adjacency[nodeIndex][adjacent++] = NODES_IN_ROW * rowIndex + colIndex;
                     }
                 }
             }
@@ -130,37 +123,6 @@ public class SudokuSolver {
             }
             pickColorFor(index, nodes);
             countOfColoredNodes++;
-
-            if (nodes[index] > 9) {
-
-            }
-//            if (nodes[index] > 9) {
-//                // Этот брютфорс не работает, так как не учитывает цвета соседей у изменяемых нод
-//                bruteForcedValue++;
-//                String bruteForcedValueStr = String.valueOf(bruteForcedValue);
-//                bruteForcedValueStr = bruteForcedValueStr.replace('0', '1');
-//                bruteForcedValue = Long.parseLong(bruteForcedValueStr);
-//
-//                if (bruteForcedValueStr.length() > bruteForceIdexes.size()) {
-//                    bruteForceIdexes.add(index);
-//                }
-//
-//                nodes = Arrays.copyOf(example, example.length);
-//
-//                System.out.println("BruteForcedIndexes = " + bruteForceIdexes);
-//                System.out.println("bruteForcedValue = " + bruteForcedValue);
-//
-//                long bruteForcedValueTemp = bruteForcedValue;
-//                for (int i = bruteForceIdexes.size() - 1; i >= 0; i--) {
-//                    nodes[bruteForceIdexes.get(i)] = (int) (bruteForcedValueTemp % 10);
-//                    bruteForcedValueTemp = bruteForcedValueTemp / 10;
-//                    System.out.println("Node X = " + nodes[bruteForceIdexes.get(i)]);
-//                }
-//
-//                countOfColoredNodes = countOfColoredNodesForExample + bruteForceIdexes.size();
-//            }
-
-            //System.out.println("Now countOfColoredNodes = " + countOfColoredNodes + " and index = " + index);
         }
 
         return nodes;
@@ -171,13 +133,13 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      */
     private void pickColorFor(int nodeIndex, int[] nodes) {
-        int unusedColors = adjacentColorsBitsUnitedFor(nodeIndex, nodes) ^ 0b111111111;
+        int unusedColors = adjacentColorsBitsFor(nodeIndex, nodes) ^ 0b111111111;
 //
 //        if (Integer.bitCount(unusedColors) > 1) {
 //            int[] acceptableColorsByType = new int[3];
 //
 //            acceptableColorsByType[0] = 0;
-//            for (int adjacentIndex : adjacencyRow[nodeIndex]) {
+//            for (int adjacentIndex : adjacency[nodeIndex]) {
 //                if (nodes[adjacentIndex] == 0) {
 //                    acceptableColorsByType[0] |= adjacentColorsBitsUnitedFor(adjacentIndex, nodes) ^ 0b111111111;
 //                }
@@ -198,7 +160,7 @@ public class SudokuSolver {
 //            acceptableColorsByType[1] = unusedColors & ~acceptableColorsByType[1];
 //            acceptableColorsByType[2] = unusedColors & ~acceptableColorsByType[2];
 //        }
-//        for  (int adjacentByRowIndex : adjacencyRow[nodeIndex]) {
+//        for  (int adjacentByRowIndex : adjacency[nodeIndex]) {
 //            adjacentColorsBitsFor(i, nodes) ^ 0b0111111111;
 //        }
 
@@ -218,9 +180,9 @@ public class SudokuSolver {
      * @return число окрашенных соседей
      */
     private int saturatedDegreeFor(int nodeIndex, int[] nodes) {
-        final int[] colorsBits = adjacentColorsBitsFor(nodeIndex, nodes);
+        final int colorsBits = adjacentColorsBitsFor(nodeIndex, nodes);
 
-        return Integer.bitCount(colorsBits[0] | colorsBits[1] | colorsBits[2]);
+        return Integer.bitCount(colorsBits);
     }
 
     /**
@@ -228,32 +190,14 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      * @return массив использованных цветов
      */
-    private int[] adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
-        int adjacentByRowColors = 0;
-        int adjacentByColColors = 0;
-        int adjacentByBoxColors = 0;
+    private int adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
+        int adjacentColors = 0;
         int count = 0;
-        for (int adjacentIndex : adjacencyRow[nodeIndex]) {
-            adjacentByRowColors |= colorBitMap[nodes[adjacentIndex]];
-        }
-        for (int adjacentIndex : adjacencyCol[nodeIndex]) {
-            adjacentByColColors |= colorBitMap[nodes[adjacentIndex]];
-        }
-        for (int adjacentIndex : adjacencyBox[nodeIndex]) {
-            adjacentByBoxColors |= colorBitMap[nodes[adjacentIndex]];
+        for (int adjacentIndex : adjacency[nodeIndex]) {
+            adjacentColors |= colorBitMap[nodes[adjacentIndex]];
         }
 
-        return new int[] {adjacentByBoxColors, adjacentByColColors, adjacentByRowColors};
-    }
-
-    /**
-     * Определяет массив цветов использованных соседями для выбранной вершины
-     * @param nodeIndex индекс вершины
-     * @return массив использованных цветов
-     */
-    private int adjacentColorsBitsUnitedFor(int nodeIndex, int[] nodes) {
-        final int[] colorsBitsFor = adjacentColorsBitsFor(nodeIndex, nodes);
-        return colorsBitsFor[0] | colorsBitsFor[1] | colorsBitsFor[2];
+        return  adjacentColors;
     }
 
 }
