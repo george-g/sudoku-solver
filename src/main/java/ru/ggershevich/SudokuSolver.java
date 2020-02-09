@@ -1,10 +1,6 @@
 package ru.ggershevich;
 
-
-// 100000089000009002000000450007600000030040000900002005004070000500008010060300000
-
 import java.util.*;
-
 
 public class SudokuSolver {
 
@@ -15,37 +11,12 @@ public class SudokuSolver {
     private static final int BOXES_IN_ROW = 3;
     private static final int BOXES_IN_COLUMN = 3;
 
-    private final int[] example;
-    private final BitSet[] adjacency = new BitSet[NUM_OF_NODES];
-    private final BitSet[] adjacencyRow = new BitSet[NUM_OF_NODES];
-    private final BitSet[] adjacencyCol = new BitSet[NUM_OF_NODES];
-    private final BitSet[] adjacencyBox = new BitSet[NUM_OF_NODES];
+    private static final BitSet[] adjacency = new BitSet[NUM_OF_NODES];
+    private static final BitSet[] adjacencyRow = new BitSet[NUM_OF_NODES];
+    private static final BitSet[] adjacencyCol = new BitSet[NUM_OF_NODES];
+    private static final BitSet[] adjacencyBox = new BitSet[NUM_OF_NODES];
 
-    private final Set<int[]> usedCombination = new HashSet<>();
-
-    private static final int[] colorBitMap = {
-            0b000000000,
-            0b000000001,
-            0b000000010,
-            0b000000100,
-            0b000001000,
-            0b000010000,
-            0b000100000,
-            0b001000000,
-            0b010000000,
-            0b100000000,
-    };
-    private boolean nakedSinglesOptimizationEnabled = true;
-
-    /**
-     * @param example строка из 81 символа 0-9. 0 означает что соответствующая ячейка не окрашена
-     */
-    public SudokuSolver(String example) {
-        if (!checkExample(example)) {
-            throw new IllegalArgumentException("Example must be string of " + NUM_OF_NODES + " digits");
-        }
-        this.example = prepare(example);
-
+    static {
         // Подготовка списков смежности. Списки смежности записанные в индексах, могут быть подготовлены заранее и захардкожены.
         // Однако в этой версии этого решено не делать для экономии времени на разработку
         for (int nodeIndex = 0; nodeIndex < NUM_OF_NODES; nodeIndex++) {
@@ -78,11 +49,30 @@ public class SudokuSolver {
         }
     }
 
+    private static long usedCombination = 0;
+
+    private static final int[] colorBitMap = {
+            0b000000000,
+            0b000000001,
+            0b000000010,
+            0b000000100,
+            0b000001000,
+            0b000010000,
+            0b000100000,
+            0b001000000,
+            0b010000000,
+            0b100000000,
+    };
+    private static boolean nakedSinglesOptimizationEnabled = true;
+
     private static int boxIndex(int row, int column) {
         return BOXES_IN_ROW * (row / BOXES_IN_ROW) + (column / BOXES_IN_COLUMN);
     }
 
-    private int[] prepare(String exampleStr) {
+    private SudokuSolver() {
+    }
+
+    public static int[] prepare(String exampleStr) {
         int [] exampleNodes = new int[NUM_OF_NODES];
         for (int i = 0; i < NUM_OF_NODES; i++) {
             final int color = Character.getNumericValue(exampleStr.charAt(i));
@@ -92,7 +82,7 @@ public class SudokuSolver {
         return exampleNodes;
     }
 
-    private boolean checkExample(String example) {
+    private static boolean checkExample(String example) {
         if (example == null || example.length() != NUM_OF_NODES) {
             return false;
         }
@@ -101,7 +91,7 @@ public class SudokuSolver {
         return example.chars().noneMatch(c -> c < 0x30 || c > 0x39);
     }
 
-    private int[] solve(int[] nodes) {
+    public static int[] solve(int[] nodes) {
         int[] possibleColors = new int[NUM_OF_NODES];
 
         int[] colorFrequencies;
@@ -182,18 +172,16 @@ public class SudokuSolver {
         do {
             combination = Utilites.nextCombination(combination, independentNodes, powerOfCombination);
             if (combination != null) {
-                int[] vodes = Arrays.copyOf(nodes, nodes.length);
+                int[] next = Arrays.copyOf(nodes, nodes.length);
                 for (int index : combination) {
-                    vodes[index] = selectedColor;
+                    next[index] = selectedColor;
                 }
 
-                if (usedCombination.contains(vodes)) {
-                    System.out.println("combination recheck " + Arrays.toString(vodes));
-                    usedCombination.add(vodes);
-                }
+                usedCombination++;
 
-                int[] solution = solve(vodes);
+                int[] solution = solve(next);
                 if (solution != null) {
+                    System.out.println("Испольщованно комбинаций: " + usedCombination);
                     return solution;
                 }
             }
@@ -203,7 +191,7 @@ public class SudokuSolver {
         return null;
     }
 
-    private boolean nakedSinglesOptimization(int i, int[] possibleColors, int[] nodes) {
+    private static boolean nakedSinglesOptimization(int i, int[] possibleColors, int[] nodes) {
         if (nakedSinglesOptimizationEnabled && Integer.bitCount(possibleColors[i]) == 1) {
             for (int color = 0; color < colorBitMap.length; color++) {
                 if ((possibleColors[i] & colorBitMap[color]) > 0) {
@@ -215,7 +203,7 @@ public class SudokuSolver {
         return false;
     }
 
-    private boolean checkNodes(int[] nodes) {
+    private static boolean checkNodes(int[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
 
             if (!checkNodeByAdjacency(nodes, i, adjacencyRow)
@@ -228,7 +216,7 @@ public class SudokuSolver {
         return true;
     }
 
-    private boolean checkNodeByAdjacency(int[] nodes, int i, BitSet bitSet[]) {
+    private static boolean checkNodeByAdjacency(int[] nodes, int i, BitSet bitSet[]) {
 
         int sum = nodes[i];
         int adjacentIndex = bitSet[i].nextSetBit(0);
@@ -242,70 +230,23 @@ public class SudokuSolver {
         return false;
     }
 
-    public int[] solve() {
-        int[] nodes = Arrays.copyOf(example, example.length);
-        return  solve(nodes);
-//        List<Integer> bruteForceIdexes = new ArrayList();
-//        long bruteForcedValue = 0;
-//
-//        final long countOfColoredNodesForExample = Arrays.stream(nodes).filter(c -> c != 0).count();
-//        long countOfColoredNodes = countOfColoredNodesForExample;
-////        System.out.println("Started with countOfColoredNodes = " + countOfColoredNodes);
-//        while (countOfColoredNodes < NUM_OF_NODES) {
-//            int[] possibleColors = new int[NUM_OF_NODES];
-//
-//            int max = -1;
-//            int index = -1;
-//            for  (int i = 0; i < NUM_OF_NODES; i++) {
-//                // nodes[i] == 0 - Вершина еще не окрашена
-//                if (nodes[i] == 0) {
-//                    int d = saturatedDegreeFor(i, nodes);
-//
-//                    if(d > max) {
-//                        max = d;
-//                        index = i;
-//                    }
-////                  Эта часть алгоритма опущена, так как для регуляного графа степень вершины всегда одна
-//                    if (d == max) {
-//                        if (Integer.bitCount(possibleColors[i]) < Integer.bitCount(possibleColors[index])) {
-//                            index = i;
-//                        }
-//                    }
-//                }
-//            }
-//            pickColorFor(index, nodes);
-//            countOfColoredNodes++;
-//        }
-//
-//        return nodes;
-    }
-
     /**
-     * Подбирает для вершины наименьший возможный цвет (цвет еще не использованный соседями).
-     * @param nodeIndex индекс вершины
+     * @param example строка из 81 символа 0-9. 0 означает что соответствующая ячейка не окрашена
      */
-    private void pickColorFor(int nodeIndex, int[] nodes) {
-        int unusedColors = adjacentColorsBitsFor(nodeIndex, nodes) ^ 0b111111111;
-
-        // должно быть максимум 9. Но выбранный алгоритм бывает заходит в тупик. 10 нужно чтоб распознать это
-        for (int i = 1; i < 10; i++) {
-            if ((unusedColors & 0x000000001) == 1) {
-                nodes[nodeIndex] = i;
-                return;
-            }
-            unusedColors >>>= 1;
+    public static String solve(String example) {
+        if (!checkExample(example)) {
+            throw new IllegalArgumentException("Example must be string of " + NUM_OF_NODES + " digits");
         }
-    }
+        int[] solution = solve(prepare(example));
 
-    /**
-     * Определяет число окрашенных соседей для выбранной вершины
-     * @param nodeIndex индекс вершины
-     * @return число окрашенных соседей
-     */
-    private int saturatedDegreeFor(int nodeIndex, int[] nodes) {
-        final int colorsBits = adjacentColorsBitsFor(nodeIndex, nodes);
+        String result = "";
+        if (solution != null) {
+            for (int color : solution) {
+                result = result + color;
+            }
+        }
 
-        return Integer.bitCount(colorsBits);
+        return result;
     }
 
     /**
@@ -313,7 +254,7 @@ public class SudokuSolver {
      * @param nodeIndex индекс вершины
      * @return массив использованных цветов
      */
-    private int adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
+    private static int adjacentColorsBitsFor(int nodeIndex, int[] nodes) {
         int adjacentColors = 0;
         int adjacentIndex = adjacency[nodeIndex].nextSetBit(0);
         while (adjacentIndex >= 0) {

@@ -16,39 +16,30 @@ public class SudokuSolverTest {
 
     @Test
     public void testSolve() {
-        final SudokuSolver sudoku = new SudokuSolver("081790304000040016006103050000008640008904100049200000090605200870020000205017490");
         // 581796324937542816426183957712358649658974132349261785194635278873429561265817493
-        checkAnswer(sudoku.solve());
+        checkAnswer(SudokuSolver.solve(SudokuSolver.prepare("081790304000040016006103050000008640008904100049200000090605200870020000205017490")));
     }
 
     @Test
     public void testSolve2() {
-        final SudokuSolver sudoku = new SudokuSolver("300000000050703008000028070700000043000000000003904105400300800100040000968000200");
-
-        checkAnswer(sudoku.solve());
+        checkAnswer(SudokuSolver.solve(SudokuSolver.prepare("300000000050703008000028070700000043000000000003904105400300800100040000968000200")));
     }
 
 
 //    @Test(description = "Очень сложный пример")
 //    public void testSolve3() {
-//        final SudokuSolver sudoku = new SudokuSolver("100000089000009002000000450007600000030040000900002005004070000500008010060300000");
-//
-//        checkAnswer(sudoku.solve());
+//        checkAnswer(SudokuSolver.solve(SudokuSolver.prepare("100000089000009002000000450007600000030040000900002005004070000500008010060300000")));
 //    }
 
 
     @Test(description = "Простой пример из задания")
     public void testSolve4() {
-        final SudokuSolver sudoku = new SudokuSolver("013800405024605000087000930490306000001000500000701093069000740000207680102008350");
-
-        checkAnswer(sudoku.solve());
+        checkAnswer(SudokuSolver.solve(SudokuSolver.prepare("013800405024605000087000930490306000001000500000701093069000740000207680102008350")));
     }
 
     @Test(description = "Сложный пример из задания")
     public void testSolve5() {
-        final SudokuSolver sudoku = new SudokuSolver("002000041000082070000040009200079300010000080006810004100090000060430000850000400");
-
-        checkAnswer(sudoku.solve());
+        checkAnswer(SudokuSolver.solve(SudokuSolver.prepare("002000041000082070000040009200079300010000080006810004100090000060430000850000400")));
     }
 
     private void checkAnswer(int[] answer) {
