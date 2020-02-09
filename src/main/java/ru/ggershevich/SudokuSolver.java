@@ -9,11 +9,6 @@ import java.util.*;
 public class SudokuSolver {
 
     static final int NUM_OF_NODES = 81;
-    // Судоку можно представить в виде регулярного графа со степенью каждой вершины = 20
-    private static final int DEGREE_OF_NODE = 20;
-    private static final int DEGREE_OF_ROW = 8;
-    private static final int DEGREE_OF_COL = 8;
-    private static final int DEGREE_OF_BOX = 8;
     // Кол-во клеток в стороне квадрата
     private static final int NODES_IN_ROW = 9;
     private static final int NODES_IN_COLUMN = 9;
@@ -40,8 +35,10 @@ public class SudokuSolver {
             0b010000000,
             0b100000000,
     };
+    private boolean nakedSinglesOptimizationEnabled = true;
+
     /**
-     * @param example стока из 81 символа 0-9. 0 означает что соответствующая ячейка не окрашена
+     * @param example строка из 81 символа 0-9. 0 означает что соответствующая ячейка не окрашена
      */
     public SudokuSolver(String example) {
         if (!checkExample(example)) {
@@ -108,9 +105,9 @@ public class SudokuSolver {
         int[] possibleColors = new int[NUM_OF_NODES];
 
         int[] colorFrequencies;
-        boolean cellWithOneColorExists;
+        boolean repeat;
         do {
-            cellWithOneColorExists = false;
+            repeat = false;
             colorFrequencies = new int[colorBitMap.length];
             for (int i = 0; i < nodes.length; i++) {
                 if (nodes[i] == 0) {
@@ -119,13 +116,9 @@ public class SudokuSolver {
                     if (possibleColors[i] == 0) {
                         return null;
                     }
-                    if (Integer.bitCount(possibleColors[i]) == 1) {
-                        cellWithOneColorExists = true;
-                        for (int color = 0; color < colorBitMap.length; color++) {
-                            if ((possibleColors[i] & colorBitMap[color]) > 0) {
-                                nodes[i] = color;
-                            }
-                        }
+                    // Улучшение перебора. Если у вершины нет другого доступного цвета - окрасить ее сразу
+                    if (nakedSinglesOptimization(i, possibleColors, nodes)) {
+                        repeat = true;
                         break;
                     }
 
@@ -138,7 +131,7 @@ public class SudokuSolver {
                 }
             }
 
-        } while (cellWithOneColorExists);
+        } while (repeat);
 
         boolean allColored = true;
         for (int node : nodes) {
@@ -196,6 +189,7 @@ public class SudokuSolver {
 
                 if (usedCombination.contains(vodes)) {
                     System.out.println("combination recheck " + Arrays.toString(vodes));
+                    usedCombination.add(vodes);
                 }
 
                 int[] solution = solve(vodes);
@@ -207,6 +201,18 @@ public class SudokuSolver {
         while (combination != null);
 
         return null;
+    }
+
+    private boolean nakedSinglesOptimization(int i, int[] possibleColors, int[] nodes) {
+        if (nakedSinglesOptimizationEnabled && Integer.bitCount(possibleColors[i]) == 1) {
+            for (int color = 0; color < colorBitMap.length; color++) {
+                if ((possibleColors[i] & colorBitMap[color]) > 0) {
+                    nodes[i] = color;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     private boolean checkNodes(int[] nodes) {
