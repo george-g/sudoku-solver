@@ -115,7 +115,11 @@ public class SudokuSolver {
             for (int i = 0; i < nodes.length; i++) {
                 if (nodes[i] == 0) {
                     possibleColors[i] = adjacentColorsBitsFor(i, nodes) ^ 0b111111111;
-                    if (possibleColors[i] > 0 && Integer.bitCount(possibleColors[i]) == 1) {
+                    // Если для неокрашенной вершины нет доступного цвета, значит задача не решаема
+                    if (possibleColors[i] == 0) {
+                        return null;
+                    }
+                    if (Integer.bitCount(possibleColors[i]) == 1) {
                         cellWithOneColorExists = true;
                         for (int color = 0; color < colorBitMap.length; color++) {
                             if ((possibleColors[i] & colorBitMap[color]) > 0) {
