@@ -1,16 +1,14 @@
 package ru.ggershevich;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
 
 import static ru.ggershevich.SudokuSolver.NUM_OF_NODES;
 
 /**
  * Created by George on 08.02.2020.
  */
-class Utilites {
+class Utilities {
     static BitSet[] getIndependentNodes(BitSet nodesWhereSelectedColorPossible, BitSet[] adjacency) {
         BitSet[] result = new BitSet[NUM_OF_NODES];
 
@@ -27,7 +25,6 @@ class Utilites {
             while (second >= 0) {
                 if (!adjacency[first].get(second)) {
                     result[first].set(second);
-                    //result[second].set(first);
                 }
                 second = nodesWhereSelectedColorPossible.nextSetBit(++second);
             }
@@ -50,14 +47,6 @@ class Utilites {
             placeForChange = result.length - 1;
         }
 
-//        if (result.length == 1) {
-//            int i;
-//            for (i = result[0]; i < independentNodes.length; i++) {
-//
-//            }
-//        }
-
-        // улучшить это место
         while (true) {
             if (placeForChange == 0) {
                 int i;

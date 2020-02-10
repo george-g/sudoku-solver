@@ -1,15 +1,18 @@
 package ru.ggershevich;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
 
 public class SudokuSolver {
 
     static final int NUM_OF_NODES = 81;
-    // Кол-во клеток в стороне квадрата
     private static final int NODES_IN_ROW = 9;
     private static final int NODES_IN_COLUMN = 9;
     private static final int BOXES_IN_ROW = 3;
     private static final int BOXES_IN_COLUMN = 3;
+
+    private static long usedCombination = 0;
+    private static boolean nakedSinglesOptimizationEnabled = true;
 
     private static final BitSet[] adjacency = new BitSet[NUM_OF_NODES];
     private static final BitSet[] adjacencyRow = new BitSet[NUM_OF_NODES];
@@ -49,8 +52,6 @@ public class SudokuSolver {
         }
     }
 
-    private static long usedCombination = 0;
-
     private static final int[] colorBitMap = {
             0b000000000,
             0b000000001,
@@ -63,7 +64,6 @@ public class SudokuSolver {
             0b010000000,
             0b100000000,
     };
-    private static boolean nakedSinglesOptimizationEnabled = true;
 
     private static int boxIndex(int row, int column) {
         return BOXES_IN_ROW * (row / BOXES_IN_ROW) + (column / BOXES_IN_COLUMN);
@@ -167,10 +167,10 @@ public class SudokuSolver {
             }
         }
 
-        BitSet[] independentNodes = Utilites.getIndependentNodes(nodesWhereSelectedColorPossible, adjacency);
+        BitSet[] independentNodes = Utilities.getIndependentNodes(nodesWhereSelectedColorPossible, adjacency);
         int[] combination = null;
         do {
-            combination = Utilites.nextCombination(combination, independentNodes, powerOfCombination);
+            combination = Utilities.nextCombination(combination, independentNodes, powerOfCombination);
             if (combination != null) {
                 int[] next = Arrays.copyOf(nodes, nodes.length);
                 for (int index : combination) {
@@ -181,7 +181,7 @@ public class SudokuSolver {
 
                 int[] solution = solve(next);
                 if (solution != null) {
-                    System.out.println("Испольщованно комбинаций: " + usedCombination);
+//                    System.out.println("Использованно комбинаций: " + usedCombination);
                     return solution;
                 }
             }

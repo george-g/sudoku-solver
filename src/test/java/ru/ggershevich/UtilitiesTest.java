@@ -11,7 +11,7 @@ import static org.testng.Assert.assertNull;
 /**
  * Created by George on 08.02.2020.
  */
-public class UtilitesTest {
+public class UtilitiesTest {
     BitSet[] adjacency = new BitSet[7];
     BitSet nodes;
 
@@ -58,7 +58,7 @@ public class UtilitesTest {
 
     @Test
     public void testGetIndependentNodes() {
-        BitSet[] independentNodes = Utilites.getIndependentNodes(nodes, adjacency);
+        BitSet[] independentNodes = Utilities.getIndependentNodes(nodes, adjacency);
         assertEquals(independentNodes[0].toString(), "{1, 2, 3, 4, 5, 6}");
         assertEquals(independentNodes[1].toString(), "{3, 4, 5}");
         assertEquals(independentNodes[2].toString(), "{4, 5, 6}");
@@ -70,115 +70,115 @@ public class UtilitesTest {
 
     @Test
     public void nextCombinationPower4() {
-        BitSet[] independentNodes = Utilites.getIndependentNodes(nodes, adjacency);
+        BitSet[] independentNodes = Utilities.getIndependentNodes(nodes, adjacency);
         int[] combination;
-        combination = Utilites.nextCombination(null, independentNodes, 4);
+        combination = Utilities.nextCombination(null, independentNodes, 4);
         assertEquals(combination, new int[]{0, 1, 3, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{0, 1, 4, 5});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{0, 1, 4, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{0, 1, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{0, 2, 4, 5});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{0, 2, 4, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{0, 2, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{0, 4, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{1, 4, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertEquals(combination, new int[]{2, 4, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 4);
+        combination = Utilities.nextCombination(combination, independentNodes, 4);
         assertNull(combination);
     }
 
     @Test
     public void nextCombinationPower3() {
-        BitSet[] independentNodes = Utilites.getIndependentNodes(nodes, adjacency);
+        BitSet[] independentNodes = Utilities.getIndependentNodes(nodes, adjacency);
         int[] combination;
-        combination = Utilites.nextCombination(null, independentNodes, 3);
+        combination = Utilities.nextCombination(null, independentNodes, 3);
         assertEquals(combination, new int[]{0, 1, 3});
         // ...
         combination = new int[] {0, 5, 6};
-        combination = Utilites.nextCombination(combination, independentNodes, 3);
+        combination = Utilities.nextCombination(combination, independentNodes, 3);
         assertEquals(combination, new int[]{1, 3, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{1, 4, 5});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{1, 4, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{1, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{2, 4, 5});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{2, 4, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{2, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{4, 5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertNull(combination);
     }
 
     @Test
     public void nextCombinationPower2() {
-        BitSet[] independentNodes = Utilites.getIndependentNodes(nodes, adjacency);
+        BitSet[] independentNodes = Utilities.getIndependentNodes(nodes, adjacency);
         int[] combination;
-        combination = Utilites.nextCombination(null, independentNodes, 2);
+        combination = Utilities.nextCombination(null, independentNodes, 2);
         assertEquals(combination, new int[]{0, 1});
         //....
         combination = new int[] {0, 6};
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{1, 3});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{1, 4});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{1, 5});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{2, 4});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{2, 5});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{2, 6});
 //      Повтор комбинации {1, 3}
 //      combination = Utilites.nextCombination(combination, independentNodes, 2);
 //      assertEquals(combination, new int[]{3, 1});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{3, 6});
 //      Повтор комбинации {1, 4}
 //        combination = Utilites.nextCombination(combination, independentNodes, 2);
 //        assertEquals(combination, new int[]{4, 1});
         // ...
         combination = new int[]{5, 4};
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertEquals(combination, new int[]{5, 6});
-        combination = Utilites.nextCombination(combination, independentNodes, 2);
+        combination = Utilities.nextCombination(combination, independentNodes, 2);
         assertNull(combination);
     }
 
     @Test
     public void nextCombinationPower1() {
-        BitSet[] independentNodes = Utilites.getIndependentNodes(nodes, adjacency);
+        BitSet[] independentNodes = Utilities.getIndependentNodes(nodes, adjacency);
         int[] combination;
-        combination = Utilites.nextCombination(null, independentNodes, 1);
+        combination = Utilities.nextCombination(null, independentNodes, 1);
         assertEquals(combination, new int[]{0});
-        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        combination = Utilities.nextCombination(combination, independentNodes, 1);
         assertEquals(combination, new int[]{1});
-        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        combination = Utilities.nextCombination(combination, independentNodes, 1);
         assertEquals(combination, new int[]{2});
-        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        combination = Utilities.nextCombination(combination, independentNodes, 1);
         assertEquals(combination, new int[]{3});
-        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        combination = Utilities.nextCombination(combination, independentNodes, 1);
         assertEquals(combination, new int[]{4});
-        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        combination = Utilities.nextCombination(combination, independentNodes, 1);
         assertEquals(combination, new int[]{5});
-        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        combination = Utilities.nextCombination(combination, independentNodes, 1);
         assertEquals(combination, new int[]{6});
-        combination = Utilites.nextCombination(combination, independentNodes, 1);
+        combination = Utilities.nextCombination(combination, independentNodes, 1);
         assertNull(combination);
     }
 
